@@ -1,0 +1,214 @@
+[
+  {
+    "__kind__": "pydantic",
+    "__type__": "forging_utils.llm_request.dtypes.LLMInferenceResult",
+    "__data__": {
+      "model": {
+        "__kind__": "enum",
+        "__type__": "forging_utils.llm_request.dtypes.SupportModel",
+        "__data__": [
+          "deepseek-r1-250528",
+          "deepseek-r1"
+        ]
+      },
+      "input": [
+        {
+          "role": "system",
+          "content": "You are a player in a coding contest. \nYou will be provided a description of problem and then you should generate the right code to solve that problem.\nJust only output code wrapped by ```, such as '```python\n{your_code}\n```'.\nThe code will be abstracted from your reply. \nYou should ensure that the code is complete and runnable without modification, including all necessary imports."
+        },
+        {
+          "role": "user",
+          "content": "Please generate code to solve the following task:\n\n给你一个整数数组 `nums`。\n\n如果一对下标 `(i, j)` 满足以下条件，则称其为 **完美** 的：\n\n- `i < j`\n- 令a = nums[i]，b = nums[j]。那么：\n  - `min(|a - b|, |a + b|) <= min(|a|, |b|)`\n  - `max(|a - b|, |a + b|) >= max(|a|, |b|)`\n\n返回 **不同** 完美对 的数量。\n\n**注意：**绝对值 `|x|` 指的是 `x` 的 **非负** 值。\n\n \n\n**示例 1:**\n\n**输入:** nums = [0,1,2,3]\n\n**输出:** 2\n\n**解释:**\n\n有 2 个完美对：\n\n| `(i, j)` | `(a, b)` | `min(|a − b|, |a + b|)`     | `min(|a|, |b|)` | `max(|a − b|, |a + b|)`     | `max(|a|, |b|)` |\n| -------- | -------- | --------------------------- | --------------- | --------------------------- | --------------- |\n| (1, 2)   | (1, 2)   | `min(|1 − 2|, |1 + 2|) = 1` | 1               | `max(|1 − 2|, |1 + 2|) = 3` | 2               |\n| (2, 3)   | (2, 3)   | `min(|2 − 3|, |2 + 3|) = 1` | 2               | `max(|2 − 3|, |2 + 3|) = 5` | 3               |\n\n**示例 2:**\n\n**输入:** nums = [-3,2,-1,4]\n\n**输出:** 4\n\n**解释:**\n\n有 4 个完美对：\n\n| `(i, j)` | `(a, b)` | `min(|a − b|, |a + b|)`           | `min(|a|, |b|)` | `max(|a − b|, |a + b|)`           | `max(|a|, |b|)` |\n| -------- | -------- | --------------------------------- | --------------- | --------------------------------- | --------------- |\n| (0, 1)   | (-3, 2)  | `min(|-3 - 2|, |-3 + 2|) = 1`     | 2               | `max(|-3 - 2|, |-3 + 2|) = 5`     | 3               |\n| (0, 3)   | (-3, 4)  | `min(|-3 - 4|, |-3 + 4|) = 1`     | 3               | `max(|-3 - 4|, |-3 + 4|) = 7`     | 4               |\n| (1, 2)   | (2, -1)  | `min(|2 - (-1)|, |2 + (-1)|) = 1` | 1               | `max(|2 - (-1)|, |2 + (-1)|) = 3` | 2               |\n| (1, 3)   | (2, 4)   | `min(|2 - 4|, |2 + 4|) = 2`       | 2               | `max(|2 - 4|, |2 + 4|) = 6`       | 4               |\n\n**示例 3:**\n\n**输入:** nums = [1,10,100,1000]\n\n**输出:** 0\n\n**解释:**\n\n没有完美对。因此，答案是 0。\n\n \n\n**提示:**\n\n- `2 <= nums.length <= 10**5`\n- `-10**9 <= nums[i] <= 10**9`\n\n======\nYou must strictly follow this signature:\nlong long solve(std::vector<long long> nums)\n\nTarget language: C++\n\nRequirements:\n1. You may include auxiliary/helper code before or after the required signature.\n2. All import/include statements (e.g., `import` in Python, `#include` in C/C++) must be placed at the very top of the file.\n3. Preserve the provided signature exactly as given. Do not modify parameter names, types, or return types.\n4. Ensure the final code is complete, self-contained, and directly runnable.\n5. Return ONLY the raw code. Do not include explanations, markdown backticks, or conversational text.\n\nYou are generating C++ code. You only need to generate the requested function. DO NOT generate the main function. You should consider head files needed by your code."
+        }
+      ],
+      "input_length": 982,
+      "output": "\nTo solve this problem, we need to count the number of perfect pairs (i, j) in an integer array `nums` where `i < j`. A pair (i, j) is considered perfect if it satisfies two conditions based on the absolute values of the elements at these indices. \n\n### Approach\n1. **Problem Analysis**:\n   - The conditions for a perfect pair (i, j) are:\n     - `min(|a - b|, |a + b|) <= min(|a|, |b|)`\n     - `max(|a - b|, |a + b|) >= max(|a|, |b|)`\n   - After analysis, these conditions simplify to:\n     - `max(|a|, |b|) <= 2 * min(|a|, |b|)`\n   - This means for any two elements `a` and `b`, the larger absolute value must be at most twice the smaller absolute value.\n\n2. **Intuition**:\n   - The solution involves processing the absolute values of the array elements. By sorting the array of absolute values, we can efficiently count valid pairs using binary search.\n   - For each element in the sorted array, we determine how many previous elements satisfy the condition that the current element is at most twice the previous element. This is done using binary search to find the lower bound of `(current element + 1) / 2` in the subarray of previous elements.\n\n3. **Algorithm Selection**:\n   - **Step 1**: Compute the absolute values of all elements in `nums`.\n   - **Step 2**: Sort these absolute values in non-decreasing order.\n   - **Step 3**: For each element at index `j` (from 1 to `n-1`), compute the lower bound `lb = (A[j] + 1) / 2`. This value represents the smallest integer `x` such that `2 * x >= A[j]`.\n   - **Step 4**: Use binary search to find the first index `i` in the subarray `[0, j-1]` where `A[i] >= lb`. The number of valid pairs for `j` is the count of elements from this index to `j-1`.\n   - **Step 5**: Sum these counts for all `j` to get the total number of perfect pairs.\n\n4. **Complexity Analysis**:\n   - **Time Complexity**: O(n log n) due to sorting the array and performing binary searches for each element.\n   - **Space Complexity**: O(n) for storing the absolute values of the array elements.\n\n### Solution Code\n```cpp\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nlong long solve(vector<long long> nums) {\n    int n = nums.size();\n    vector<long long> A;\n    for (long long num : nums) {\n        if (num < 0) {\n            A.push_back(-num);\n        } else {\n            A.push_back(num);\n        }\n    }\n    sort(A.begin(), A.end());\n    long long ans = 0;\n    for (int j = 1; j < n; j++) {\n        long long lb = (A[j] + 1) / 2;\n        auto it = lower_bound(A.begin(), A.begin() + j, lb);\n        ans += (A.begin() + j - it);\n    }\n    return ans;\n}\n```\n\n### Explanation\n1. **Absolute Values and Sorting**:\n   - The array `nums` is transformed into an array `A` containing the absolute values of its elements.\n   - Sorting `A` allows us to efficiently apply binary search operations to find valid pairs.\n\n2. **Binary Search for Valid Pairs**:\n   - For each element `A[j]` (starting from the second element), we compute `lb` as `(A[j] + 1) / 2`. This `lb` is the minimum value that any previous element `A[i]` must meet to satisfy `A[j] <= 2 * A[i]`.\n   - Using `lower_bound`, we find the first position `it` in the subarray `A[0..j-1]` where `A[i] >= lb`. The number of valid elements from `it` to `j-1` is `(j - (it - A.begin()))`, which is added to the total count of perfect pairs.\n\n3. **Result Calculation**:\n   - The total count of perfect pairs, accumulated in `ans`, is returned after processing all elements in the array.\n\nThis approach efficiently leverages sorting and binary search to minimize the number of operations, making it suitable for large input sizes as specified in the problem constraints.",
+      "output_length": 9975,
+      "reasoning_content": "",
+      "reasoning_length": 0,
+      "response_msgs": null,
+      "tool_calls": null,
+      "inference_time": 246.11595939984545,
+      "inference_device": {
+        "__kind__": "enum",
+        "__type__": "forging_utils.llm_request.dtypes.InferenceDevice",
+        "__data__": "cloud.volcano"
+      },
+      "cost": 0.0,
+      "appendix": {
+        "pass_score": 1.0,
+        "code_running_result": {
+          "__kind__": "pydantic",
+          "__type__": "forging_utils.code_runner.CodeRunnerResult",
+          "__data__": {
+            "using_time": 5.330349877476692,
+            "return_code": 0,
+            "is_timeout": false,
+            "stdout": "true\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\n",
+            "stderr": "",
+            "os_error": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "__kind__": "pydantic",
+    "__type__": "forging_utils.llm_request.dtypes.LLMInferenceResult",
+    "__data__": {
+      "model": {
+        "__kind__": "enum",
+        "__type__": "forging_utils.llm_request.dtypes.SupportModel",
+        "__data__": [
+          "deepseek-r1-250528",
+          "deepseek-r1"
+        ]
+      },
+      "input": [
+        {
+          "role": "system",
+          "content": "You are a player in a coding contest. \nYou will be provided a description of problem and then you should generate the right code to solve that problem.\nJust only output code wrapped by ```, such as '```python\n{your_code}\n```'.\nThe code will be abstracted from your reply. \nYou should ensure that the code is complete and runnable without modification, including all necessary imports."
+        },
+        {
+          "role": "user",
+          "content": "Please generate code to solve the following task:\n\n给你一个整数数组 `nums`。\n\n如果一对下标 `(i, j)` 满足以下条件，则称其为 **完美** 的：\n\n- `i < j`\n- 令a = nums[i]，b = nums[j]。那么：\n  - `min(|a - b|, |a + b|) <= min(|a|, |b|)`\n  - `max(|a - b|, |a + b|) >= max(|a|, |b|)`\n\n返回 **不同** 完美对 的数量。\n\n**注意：**绝对值 `|x|` 指的是 `x` 的 **非负** 值。\n\n \n\n**示例 1:**\n\n**输入:** nums = [0,1,2,3]\n\n**输出:** 2\n\n**解释:**\n\n有 2 个完美对：\n\n| `(i, j)` | `(a, b)` | `min(|a − b|, |a + b|)`     | `min(|a|, |b|)` | `max(|a − b|, |a + b|)`     | `max(|a|, |b|)` |\n| -------- | -------- | --------------------------- | --------------- | --------------------------- | --------------- |\n| (1, 2)   | (1, 2)   | `min(|1 − 2|, |1 + 2|) = 1` | 1               | `max(|1 − 2|, |1 + 2|) = 3` | 2               |\n| (2, 3)   | (2, 3)   | `min(|2 − 3|, |2 + 3|) = 1` | 2               | `max(|2 − 3|, |2 + 3|) = 5` | 3               |\n\n**示例 2:**\n\n**输入:** nums = [-3,2,-1,4]\n\n**输出:** 4\n\n**解释:**\n\n有 4 个完美对：\n\n| `(i, j)` | `(a, b)` | `min(|a − b|, |a + b|)`           | `min(|a|, |b|)` | `max(|a − b|, |a + b|)`           | `max(|a|, |b|)` |\n| -------- | -------- | --------------------------------- | --------------- | --------------------------------- | --------------- |\n| (0, 1)   | (-3, 2)  | `min(|-3 - 2|, |-3 + 2|) = 1`     | 2               | `max(|-3 - 2|, |-3 + 2|) = 5`     | 3               |\n| (0, 3)   | (-3, 4)  | `min(|-3 - 4|, |-3 + 4|) = 1`     | 3               | `max(|-3 - 4|, |-3 + 4|) = 7`     | 4               |\n| (1, 2)   | (2, -1)  | `min(|2 - (-1)|, |2 + (-1)|) = 1` | 1               | `max(|2 - (-1)|, |2 + (-1)|) = 3` | 2               |\n| (1, 3)   | (2, 4)   | `min(|2 - 4|, |2 + 4|) = 2`       | 2               | `max(|2 - 4|, |2 + 4|) = 6`       | 4               |\n\n**示例 3:**\n\n**输入:** nums = [1,10,100,1000]\n\n**输出:** 0\n\n**解释:**\n\n没有完美对。因此，答案是 0。\n\n \n\n**提示:**\n\n- `2 <= nums.length <= 10**5`\n- `-10**9 <= nums[i] <= 10**9`\n\n======\nYou must strictly follow this signature:\nlong long solve(std::vector<long long> nums)\n\nTarget language: C++\n\nRequirements:\n1. You may include auxiliary/helper code before or after the required signature.\n2. All import/include statements (e.g., `import` in Python, `#include` in C/C++) must be placed at the very top of the file.\n3. Preserve the provided signature exactly as given. Do not modify parameter names, types, or return types.\n4. Ensure the final code is complete, self-contained, and directly runnable.\n5. Return ONLY the raw code. Do not include explanations, markdown backticks, or conversational text.\n\nYou are generating C++ code. You only need to generate the requested function. DO NOT generate the main function. You should consider head files needed by your code."
+        }
+      ],
+      "input_length": 982,
+      "output": "\nTo solve this problem, we need to count the number of distinct perfect pairs (i, j) in an integer array where i < j and the conditions on the absolute values of the elements at these indices are satisfied. The conditions simplify to checking if the larger absolute value of the two elements is at most twice the smaller absolute value. \n\n### Approach\n1. **Problem Analysis**: The problem requires finding pairs (i, j) such that the larger absolute value of the elements at these indices is at most twice the smaller absolute value. This simplifies the original conditions significantly.\n2. **Intuition**: By taking the absolute values of all elements, we can focus on their magnitudes. Sorting these absolute values allows us to efficiently count valid pairs using binary search.\n3. **Algorithm Selection**: \n   - **Step 1**: Compute the absolute values of all elements in the array.\n   - **Step 2**: Sort the array of absolute values.\n   - **Step 3**: For each element in the sorted array, determine the smallest element in the preceding elements that satisfies the condition (i.e., the element must be at least half the current element's value). The number of valid pairs for the current element is the count of elements from this smallest element to the current element's position.\n4. **Complexity Analysis**: Sorting the array takes O(n log n) time. For each element, a binary search operation is performed, taking O(log n) time. Thus, the overall time complexity is O(n log n), which is efficient for the given constraints (n ≤ 10^5).\n\n### Solution Code\n```cpp\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nlong long solve(vector<long long> nums) {\n    long long n = nums.size();\n    vector<long long> arr(n);\n    for (long long i = 0; i < n; i++) {\n        if (nums[i] < 0) {\n            arr[i] = -nums[i];\n        } else {\n            arr[i] = nums[i];\n        }\n    }\n    sort(arr.begin(), arr.end());\n    long long count = 0;\n    for (long long j = 0; j < n; j++) {\n        long long key = (arr[j] + 1) / 2;\n        auto it = lower_bound(arr.begin(), arr.begin() + j, key);\n        long long idx = it - arr.begin();\n        count += (j - idx);\n    }\n    return count;\n}\n```\n\n### Explanation\n1. **Absolute Values Calculation**: The first step involves converting each element in the input array to its absolute value. This simplifies the problem to dealing with non-negative values only.\n2. **Sorting**: The array of absolute values is sorted to facilitate efficient binary search operations. Sorting helps in systematically checking each element against its predecessors.\n3. **Binary Search for Valid Pairs**: For each element in the sorted array, we compute the smallest value (`key`) that an element must have to form a valid pair with the current element. Using binary search, we find the first element in the sorted subarray (from start to current index) that is at least `key`. The number of valid pairs for the current element is then the count of elements from this found position to the current element's position.\n4. **Counting Pairs**: The total count of valid pairs is accumulated as we process each element in the sorted array. The solution efficiently leverages sorting and binary search to minimize the time complexity, making it suitable for large input sizes.",
+      "output_length": 8948,
+      "reasoning_content": "",
+      "reasoning_length": 0,
+      "response_msgs": null,
+      "tool_calls": null,
+      "inference_time": 222.68440149957314,
+      "inference_device": {
+        "__kind__": "enum",
+        "__type__": "forging_utils.llm_request.dtypes.InferenceDevice",
+        "__data__": "cloud.volcano"
+      },
+      "cost": 0.0,
+      "appendix": {
+        "pass_score": 1.0,
+        "code_running_result": {
+          "__kind__": "pydantic",
+          "__type__": "forging_utils.code_runner.CodeRunnerResult",
+          "__data__": {
+            "using_time": 5.073397062718868,
+            "return_code": 0,
+            "is_timeout": false,
+            "stdout": "true\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\n",
+            "stderr": "",
+            "os_error": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "__kind__": "pydantic",
+    "__type__": "forging_utils.llm_request.dtypes.LLMInferenceResult",
+    "__data__": {
+      "model": {
+        "__kind__": "enum",
+        "__type__": "forging_utils.llm_request.dtypes.SupportModel",
+        "__data__": [
+          "deepseek-r1-250528",
+          "deepseek-r1"
+        ]
+      },
+      "input": [
+        {
+          "role": "system",
+          "content": "You are a player in a coding contest. \nYou will be provided a description of problem and then you should generate the right code to solve that problem.\nJust only output code wrapped by ```, such as '```python\n{your_code}\n```'.\nThe code will be abstracted from your reply. \nYou should ensure that the code is complete and runnable without modification, including all necessary imports."
+        },
+        {
+          "role": "user",
+          "content": "Please generate code to solve the following task:\n\n给你一个整数数组 `nums`。\n\n如果一对下标 `(i, j)` 满足以下条件，则称其为 **完美** 的：\n\n- `i < j`\n- 令a = nums[i]，b = nums[j]。那么：\n  - `min(|a - b|, |a + b|) <= min(|a|, |b|)`\n  - `max(|a - b|, |a + b|) >= max(|a|, |b|)`\n\n返回 **不同** 完美对 的数量。\n\n**注意：**绝对值 `|x|` 指的是 `x` 的 **非负** 值。\n\n \n\n**示例 1:**\n\n**输入:** nums = [0,1,2,3]\n\n**输出:** 2\n\n**解释:**\n\n有 2 个完美对：\n\n| `(i, j)` | `(a, b)` | `min(|a − b|, |a + b|)`     | `min(|a|, |b|)` | `max(|a − b|, |a + b|)`     | `max(|a|, |b|)` |\n| -------- | -------- | --------------------------- | --------------- | --------------------------- | --------------- |\n| (1, 2)   | (1, 2)   | `min(|1 − 2|, |1 + 2|) = 1` | 1               | `max(|1 − 2|, |1 + 2|) = 3` | 2               |\n| (2, 3)   | (2, 3)   | `min(|2 − 3|, |2 + 3|) = 1` | 2               | `max(|2 − 3|, |2 + 3|) = 5` | 3               |\n\n**示例 2:**\n\n**输入:** nums = [-3,2,-1,4]\n\n**输出:** 4\n\n**解释:**\n\n有 4 个完美对：\n\n| `(i, j)` | `(a, b)` | `min(|a − b|, |a + b|)`           | `min(|a|, |b|)` | `max(|a − b|, |a + b|)`           | `max(|a|, |b|)` |\n| -------- | -------- | --------------------------------- | --------------- | --------------------------------- | --------------- |\n| (0, 1)   | (-3, 2)  | `min(|-3 - 2|, |-3 + 2|) = 1`     | 2               | `max(|-3 - 2|, |-3 + 2|) = 5`     | 3               |\n| (0, 3)   | (-3, 4)  | `min(|-3 - 4|, |-3 + 4|) = 1`     | 3               | `max(|-3 - 4|, |-3 + 4|) = 7`     | 4               |\n| (1, 2)   | (2, -1)  | `min(|2 - (-1)|, |2 + (-1)|) = 1` | 1               | `max(|2 - (-1)|, |2 + (-1)|) = 3` | 2               |\n| (1, 3)   | (2, 4)   | `min(|2 - 4|, |2 + 4|) = 2`       | 2               | `max(|2 - 4|, |2 + 4|) = 6`       | 4               |\n\n**示例 3:**\n\n**输入:** nums = [1,10,100,1000]\n\n**输出:** 0\n\n**解释:**\n\n没有完美对。因此，答案是 0。\n\n \n\n**提示:**\n\n- `2 <= nums.length <= 10**5`\n- `-10**9 <= nums[i] <= 10**9`\n\n======\nYou must strictly follow this signature:\nlong long solve(std::vector<long long> nums)\n\nTarget language: C++\n\nRequirements:\n1. You may include auxiliary/helper code before or after the required signature.\n2. All import/include statements (e.g., `import` in Python, `#include` in C/C++) must be placed at the very top of the file.\n3. Preserve the provided signature exactly as given. Do not modify parameter names, types, or return types.\n4. Ensure the final code is complete, self-contained, and directly runnable.\n5. Return ONLY the raw code. Do not include explanations, markdown backticks, or conversational text.\n\nYou are generating C++ code. You only need to generate the requested function. DO NOT generate the main function. You should consider head files needed by your code."
+        }
+      ],
+      "input_length": 982,
+      "output": "\nTo solve this problem, we need to count the number of distinct pairs of indices (i, j) such that i < j and the pair (nums[i], nums[j]) satisfies the given conditions. The conditions are derived to be equivalent to ensuring that the maximum of the absolute values of the two numbers is at most twice the minimum of their absolute values. \n\n### Approach\n1. **Problem Analysis**: The problem requires counting pairs (i, j) where i < j and the absolute values of the numbers at these indices satisfy the condition: max(|a|, |b|) ≤ 2 * min(|a|, |b|). This condition simplifies the original problem constraints.\n2. **Intuition**: By taking the absolute values of all numbers in the array, we can focus on their magnitudes. Sorting this array of absolute values allows us to efficiently count valid pairs using a two-pointer technique.\n3. **Algorithm Selection**: \n   - **Sorting**: First, we sort the array of absolute values to facilitate the two-pointer approach.\n   - **Two Pointers**: We use two pointers, `i` and `j`, where `i` iterates through each element, and `j` is advanced to include all elements that satisfy the condition B[j] ≤ 2 * B[i]. The number of valid pairs for each `i` is then `j - (i + 1)`, representing the count of elements from `i+1` to `j-1`.\n4. **Complexity Analysis**: Sorting the array takes O(n log n) time. The two-pointer technique operates in O(n) time since each element is processed once. Thus, the overall complexity is O(n log n), which is efficient for the given constraints.\n\n### Solution Code\n```cpp\n#include <algorithm>\n#include <vector>\n#include <cmath>\n\nlong long solve(std::vector<long long> nums) {\n    int n = nums.size();\n    std::vector<long long> B;\n    for (int i = 0; i < n; i++) {\n        long long val = nums[i];\n        B.push_back(val < 0 ? -val : val);\n    }\n    std::sort(B.begin(), B.end());\n    long long ans = 0;\n    int j = 0;\n    for (int i = 0; i < n; i++) {\n        while (j < n && B[j] <= 2LL * B[i]) {\n            j++;\n        }\n        ans += j - (i + 1);\n    }\n    return ans;\n}\n```\n\n### Explanation\n1. **Absolute Values and Sorting**: We first compute the absolute values of all numbers in the input array and sort them. This allows us to efficiently find valid pairs using a two-pointer approach.\n2. **Two-Pointer Technique**: \n   - **Pointer Initialization**: We initialize pointer `j` to 0.\n   - **Iterate with `i`**: For each element at index `i`, we advance `j` to the first position where the condition `B[j] ≤ 2 * B[i]` is no longer satisfied.\n   - **Count Valid Pairs**: The number of valid pairs for the current `i` is `j - (i + 1)`, which accounts for all elements from `i+1` to `j-1` that satisfy the condition.\n3. **Efficiency**: The sorting step ensures that the two-pointer technique operates in linear time relative to the input size, making the solution efficient for large arrays. The overall approach efficiently counts all valid pairs without redundant checks.",
+      "output_length": 16227,
+      "reasoning_content": "",
+      "reasoning_length": 0,
+      "response_msgs": null,
+      "tool_calls": null,
+      "inference_time": 417.23100030003116,
+      "inference_device": {
+        "__kind__": "enum",
+        "__type__": "forging_utils.llm_request.dtypes.InferenceDevice",
+        "__data__": "cloud.volcano"
+      },
+      "cost": 0.0,
+      "appendix": {
+        "pass_score": 1.0,
+        "code_running_result": {
+          "__kind__": "pydantic",
+          "__type__": "forging_utils.code_runner.CodeRunnerResult",
+          "__data__": {
+            "using_time": 5.401193802244961,
+            "return_code": 0,
+            "is_timeout": false,
+            "stdout": "true\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\n",
+            "stderr": "",
+            "os_error": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "__kind__": "pydantic",
+    "__type__": "forging_utils.llm_request.dtypes.LLMInferenceResult",
+    "__data__": {
+      "model": {
+        "__kind__": "enum",
+        "__type__": "forging_utils.llm_request.dtypes.SupportModel",
+        "__data__": [
+          "deepseek-r1-250528",
+          "deepseek-r1"
+        ]
+      },
+      "input": [
+        {
+          "role": "system",
+          "content": "You are a player in a coding contest. \nYou will be provided a description of problem and then you should generate the right code to solve that problem.\nJust only output code wrapped by ```, such as '```python\n{your_code}\n```'.\nThe code will be abstracted from your reply. \nYou should ensure that the code is complete and runnable without modification, including all necessary imports."
+        },
+        {
+          "role": "user",
+          "content": "Please generate code to solve the following task:\n\n给你一个整数数组 `nums`。\n\n如果一对下标 `(i, j)` 满足以下条件，则称其为 **完美** 的：\n\n- `i < j`\n- 令a = nums[i]，b = nums[j]。那么：\n  - `min(|a - b|, |a + b|) <= min(|a|, |b|)`\n  - `max(|a - b|, |a + b|) >= max(|a|, |b|)`\n\n返回 **不同** 完美对 的数量。\n\n**注意：**绝对值 `|x|` 指的是 `x` 的 **非负** 值。\n\n \n\n**示例 1:**\n\n**输入:** nums = [0,1,2,3]\n\n**输出:** 2\n\n**解释:**\n\n有 2 个完美对：\n\n| `(i, j)` | `(a, b)` | `min(|a − b|, |a + b|)`     | `min(|a|, |b|)` | `max(|a − b|, |a + b|)`     | `max(|a|, |b|)` |\n| -------- | -------- | --------------------------- | --------------- | --------------------------- | --------------- |\n| (1, 2)   | (1, 2)   | `min(|1 − 2|, |1 + 2|) = 1` | 1               | `max(|1 − 2|, |1 + 2|) = 3` | 2               |\n| (2, 3)   | (2, 3)   | `min(|2 − 3|, |2 + 3|) = 1` | 2               | `max(|2 − 3|, |2 + 3|) = 5` | 3               |\n\n**示例 2:**\n\n**输入:** nums = [-3,2,-1,4]\n\n**输出:** 4\n\n**解释:**\n\n有 4 个完美对：\n\n| `(i, j)` | `(a, b)` | `min(|a − b|, |a + b|)`           | `min(|a|, |b|)` | `max(|a − b|, |a + b|)`           | `max(|a|, |b|)` |\n| -------- | -------- | --------------------------------- | --------------- | --------------------------------- | --------------- |\n| (0, 1)   | (-3, 2)  | `min(|-3 - 2|, |-3 + 2|) = 1`     | 2               | `max(|-3 - 2|, |-3 + 2|) = 5`     | 3               |\n| (0, 3)   | (-3, 4)  | `min(|-3 - 4|, |-3 + 4|) = 1`     | 3               | `max(|-3 - 4|, |-3 + 4|) = 7`     | 4               |\n| (1, 2)   | (2, -1)  | `min(|2 - (-1)|, |2 + (-1)|) = 1` | 1               | `max(|2 - (-1)|, |2 + (-1)|) = 3` | 2               |\n| (1, 3)   | (2, 4)   | `min(|2 - 4|, |2 + 4|) = 2`       | 2               | `max(|2 - 4|, |2 + 4|) = 6`       | 4               |\n\n**示例 3:**\n\n**输入:** nums = [1,10,100,1000]\n\n**输出:** 0\n\n**解释:**\n\n没有完美对。因此，答案是 0。\n\n \n\n**提示:**\n\n- `2 <= nums.length <= 10**5`\n- `-10**9 <= nums[i] <= 10**9`\n\n======\nYou must strictly follow this signature:\nlong long solve(std::vector<long long> nums)\n\nTarget language: C++\n\nRequirements:\n1. You may include auxiliary/helper code before or after the required signature.\n2. All import/include statements (e.g., `import` in Python, `#include` in C/C++) must be placed at the very top of the file.\n3. Preserve the provided signature exactly as given. Do not modify parameter names, types, or return types.\n4. Ensure the final code is complete, self-contained, and directly runnable.\n5. Return ONLY the raw code. Do not include explanations, markdown backticks, or conversational text.\n\nYou are generating C++ code. You only need to generate the requested function. DO NOT generate the main function. You should consider head files needed by your code."
+        }
+      ],
+      "input_length": 982,
+      "output": "\nTo solve this problem, we need to count the number of **perfect** pairs `(i, j)` in an integer array `nums` where `i < j` and the elements at these indices satisfy two specific conditions involving their absolute differences and sums. The conditions simplify to checking if the larger absolute value between the two elements is at most twice the smaller absolute value.\n\n### Approach\n1. **Problem Analysis**: \n   - The conditions for a perfect pair `(i, j)` reduce to the following:\n     - The larger absolute value of the two elements must be at most twice the smaller absolute value.\n     - The second condition (involving the maximum of absolute differences and sums) is always true if the first condition is satisfied.\n   - Pairs involving zero can only be perfect if both elements are zero because any non-zero element paired with zero fails the first condition.\n\n2. **Intuition**:\n   - **Zero Handling**: Count pairs among zeros separately using combinations (since any two zeros form a perfect pair).\n   - **Non-zero Handling**: For non-zero elements, we consider their absolute values. We need to count pairs where:\n     - Both elements have the same absolute value (any two such elements form a perfect pair).\n     - Elements have different absolute values, but the larger one is at most twice the smaller one.\n\n3. **Algorithm Selection**:\n   - **Grouping**: Separate zero and non-zero elements. For non-zero elements, group by their absolute values.\n   - **Same Absolute Values**: For each group of elements with the same absolute value, calculate the number of pairs as combinations of count choose 2.\n   - **Different Absolute Values**: For distinct absolute values, sort them and use prefix sums to efficiently compute the count of valid pairs where one absolute value is at most twice the other. This involves binary search to find valid ranges for each absolute value.\n\n4. **Complexity Analysis**:\n   - **Time Complexity**: O(n log n) due to sorting and binary search operations.\n   - **Space Complexity**: O(n) for storing frequencies and prefix sums.\n\n### Solution Code\n```cpp\n#include <vector>\n#include <algorithm>\n#include <map>\nusing namespace std;\n\nlong long solve(vector<long long> nums) {\n    map<long long, long long> freq_nonzero;\n    long long count_zero = 0;\n    \n    for (auto num : nums) {\n        if (num == 0) {\n            count_zero++;\n        } else {\n            long long abs_val = abs(num);\n            freq_nonzero[abs_val]++;\n        }\n    }\n    \n    long long total = 0;\n    total += count_zero * (count_zero - 1) / 2;\n    \n    if (freq_nonzero.empty()) {\n        return total;\n    }\n    \n    vector<long long> distinct_abs;\n    vector<long long> counts;\n    for (auto kv : freq_nonzero) {\n        distinct_abs.push_back(kv.first);\n        counts.push_back(kv.second);\n    }\n    \n    long long n = distinct_abs.size();\n    vector<long long> prefix(n + 1, 0);\n    for (long long i = 0; i < n; i++) {\n        prefix[i + 1] = prefix[i] + counts[i];\n    }\n    \n    for (long long i = 0; i < n; i++) {\n        long long count_here = counts[i];\n        total += count_here * (count_here - 1) / 2;\n    }\n    \n    for (long long i = 0; i < n; i++) {\n        long long u = distinct_abs[i];\n        long long L = u + 1;\n        long long R = 2 * u;\n        \n        auto it_low = lower_bound(distinct_abs.begin(), distinct_abs.end(), L);\n        if (it_low == distinct_abs.end()) continue;\n        long long left_index = it_low - distinct_abs.begin();\n        \n        auto it_high = upper_bound(distinct_abs.begin(), distinct_abs.end(), R);\n        long long right_index = it_high - distinct_abs.begin() - 1;\n        \n        if (left_index <= right_index) {\n            long long sum_range = prefix[right_index + 1] - prefix[left_index];\n            total += counts[i] * sum_range;\n        }\n    }\n    \n    return total;\n}\n```\n\n### Explanation\n- **Zero Handling**: The count of perfect pairs among zeros is calculated as combinations of `count_zero` choose 2.\n- **Non-zero Handling**:\n  - **Same Absolute Values**: For each group of elements with the same absolute value, the number of perfect pairs is calculated as combinations of the group size choose 2.\n  - **Different Absolute Values**: For each distinct absolute value `u`, we find all distinct absolute values `v` such that `u < v <= 2*u`. The count of such values is found using binary search, and the total pairs are the product of the count of `u` and the sum of counts of valid `v` values. Prefix sums are used to efficiently compute the sum of counts in the valid range.\n- The total perfect pairs is the sum of pairs from zero handling and non-zero handling. The solution efficiently handles large input sizes using sorting and binary search operations.",
+      "output_length": 7222,
+      "reasoning_content": "",
+      "reasoning_length": 0,
+      "response_msgs": null,
+      "tool_calls": null,
+      "inference_time": 180.25797689985484,
+      "inference_device": {
+        "__kind__": "enum",
+        "__type__": "forging_utils.llm_request.dtypes.InferenceDevice",
+        "__data__": "cloud.volcano"
+      },
+      "cost": 0.0,
+      "appendix": {
+        "pass_score": 1.0,
+        "code_running_result": {
+          "__kind__": "pydantic",
+          "__type__": "forging_utils.code_runner.CodeRunnerResult",
+          "__data__": {
+            "using_time": 5.8487046752125025,
+            "return_code": 0,
+            "is_timeout": false,
+            "stdout": "true\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\n",
+            "stderr": "",
+            "os_error": null
+          }
+        }
+      }
+    }
+  }
+]
